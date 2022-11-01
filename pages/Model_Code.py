@@ -1,8 +1,10 @@
 import streamlit as st
-header = st.container() 
+
+header = st.container()
 
 with header:
-    st.code("""def solve_model(df: pd.DataFrame, 
+    st.code(
+        """def solve_model(df: pd.DataFrame, 
                 solar_cap: int, 
                 battery_cap: int, 
                 energy_cap: int, 
@@ -53,4 +55,5 @@ with header:
         ans_OBJ[t] = p.value(OBJ[t])
         
     df["SOC"] = ans_SOC
-    return(df, sum(ans_OBJ))""")
+    return(df, sum(ans_OBJ))"""
+    )
