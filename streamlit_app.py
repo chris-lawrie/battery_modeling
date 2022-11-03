@@ -1,11 +1,9 @@
 # To launch dashboard, in terminal -> streamlit run streamlit_app.py
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import numpy as np
 from LP import solve_model
 
-def run():
+def cli():
     # Reading in / manipulating data
     df = pd.read_csv("solar_battery_data.csv")
     header = st.container()
@@ -55,4 +53,4 @@ def run():
             st.line_chart(chart_data)
 
 if __name__ == "__main__":
-    run()
+    cli()
