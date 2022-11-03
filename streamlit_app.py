@@ -1,6 +1,7 @@
 # To launch dashboard, in terminal -> streamlit run streamlit_app.py
 import streamlit as st
 import pandas as pd
+import constants as c
 from LP import solve_model
 
 def cli():
@@ -21,7 +22,6 @@ def cli():
 
     col1, col2 = st.columns(2)
     with col2:
-        solar_cap = st.slider("Solar Capacity (MW)", 10, 50, value=50, step=10)
         battery_cap = st.slider(
             "Battery Capacity (MW DC)", 5, 25, value=10, step=5
         )
@@ -36,14 +36,14 @@ def cli():
     with col1:
         st.markdown("Now we need to design our battery and PV system:")
         st.markdown(f"- Modelling a {energy_cap} MWh / {battery_cap} MW Battery 🔋")
-        st.markdown(f"- Co-located with a {solar_cap} MW PV system ☀️")
+        st.markdown(f"- Co-located with a {c.solar_cap} MW PV system ☀️")
 
 
     results = st.container()
     with results:
         if st.button("Solve Model"):
             df_ans, tot, solve_time = solve_model(
-                df, solar_cap, battery_cap, energy_cap, grid_cap, start_charge
+                df, c.solar_cap, battery_cap, energy_cap, grid_cap, start_charge
             )
 
             st.header(f"The model solved! 🥳")
