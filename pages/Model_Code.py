@@ -3,7 +3,13 @@ import streamlit as st
 header = st.container()
 
 with header:
+    st.header("Code:")
+    st.markdown("Below is the guts of the linear program. ")
     st.code(r"""    
+import pulp as p
+import pandas as pd
+
+df = pd.read_csv("solar_battery_data.csv")
 T = df.shape[0]
 model = p.LpProblem("Model", p.LpMaximize)
 
