@@ -12,14 +12,20 @@ def cli():
 
     with header:
         st.title("Colocated Battery Optimsation")
+        st.header("Project Intro:")
+        st.markdown("Wholesale electricity prices vary through time. As more variable renewable energy is deployed to the grid, the importance of energy storage systems will increase. This project uses optimisation to maximise revenue earned from a battery storage sytem co-located with either wind or solar power!")
+
+
         st.markdown(
-            "This model considers a typical day for a battery storage system co-located with solar panels. The price of electricty changes throughout the day, as does the avaliable solar. Given these variations, what is the most money we can make?"
+            "First we'll consider just a single 24 hour period. Lets look at the data we're dealing with. The chart below shows the price of electricty changing throughout the day, as does the avaliable solar power."
         )
         st.markdown("The data is shown in 15min intervals for 24 hours:")
         chart_data = df[["Price", "Solar"]]
         st.line_chart(chart_data)
 
 
+
+    st.header("Design a Battery:")
     col1, col2 = st.columns(2)
     with col2:
         battery_cap = st.slider(
@@ -49,7 +55,7 @@ def cli():
             st.header(f"The model solved! 🥳")
             st.markdown(f"Optimal Solution found in {round(solve_time,2)} seconds")
             st.markdown(f"Total Profit: ${round(tot, 2)}")
-            chart_data = df_ans[["Price", "Solar", "SOC"]]
+            chart_data = df_ans[["Price", "SOC", "Solar"]]
             st.line_chart(chart_data)
 
 if __name__ == "__main__":
