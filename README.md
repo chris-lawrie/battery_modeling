@@ -3,9 +3,9 @@
 ## Welcome
 Hello there! This is the code for my battery model! 
 
-The model allows the user to design a battery system that either stands alone, or be is connected to a wind or PV system. The model then figures out the most optimal charge/discharge behavior for this battery to maximise revenue.
+The model allows the user to design a battery system that either stands alone, or is connected to a wind or PV system. The model then figures out the most optimal charge/discharge behavior for this battery to maximise revenue. The battery can either charge directly from the grid (buys electricity), or can charge from the VRE system (if built). The battery then discharges into the grid and generates revenue at a rate commensurate with the current wholesale price.
 
-The guts of the model are a just a linear program.
+The guts of the model are a just a linear program, and are detailed in the dashboard of the app.
 
 
 ## Goals / Learnings for the project: 
