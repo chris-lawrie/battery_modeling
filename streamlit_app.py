@@ -1,6 +1,7 @@
 # To launch dashboard, in terminal -> streamlit run streamlit_app.py
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 from LP import solve_model
 
 
@@ -44,6 +45,24 @@ def cli():
             st.line_chart(pv_wind_data)
         with price_col:
             st.line_chart(price_data)
+
+
+        st.header("Test graph")
+        # st.header("Selected data: hour by hour") ############################
+        st.plotly_chart(
+        px.line(pv_wind_data, color_discrete_sequence = ['lightblue', 'salmon'], width=800, height=400,
+        labels={
+                     "value": "Avaliable Power",
+                     "index": "Hour",
+                     "variable": "VRE Source"
+                 }).update_layout(
+            {
+                "title_text":"Plot to show VRE avaliability through time",
+                "plot_bgcolor":"#0E1116",
+                "paper_bgcolor":"#0E1116",
+            }
+        ).update_xaxes(linecolor='#27292E', gridcolor='#27292E').update_yaxes(linecolor='#27292E', gridcolor='#27292E')
+    )
 
         st.header("Design Your System!")
         st.markdown(
