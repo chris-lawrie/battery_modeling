@@ -4,7 +4,8 @@ import pandas as pd
 import plotly.express as px
 import text as t
 from LP import solve_model
-
+import altair as alt
+import numpy as np
 
 def cli():
     st.set_page_config(layout="wide")
@@ -22,11 +23,17 @@ def cli():
 
         sim_length = 24
         pv_wind_data = df[["Solar"]].head(sim_length)
+        pv_wind_data['Hour']= range(1, len(pv_wind_data) + 1)
         price_data = df[["Price"]].head(sim_length)
+        price_data['Hour']= range(1, len(price_data) + 1)
+
+        st.markdown(f"{pv_wind_data.columns}")
 
         pv_wind_col, price_col = st.columns(2)
         with pv_wind_col:
-            st.line_chart(pv_wind_data)
+            # st.line_chart(pv_wind_data, color = "red")
+            c = alt.Chart(pv_wind_data, title = "test_chart").mark_line().encode(x = "Hour", y = "Solar", color=alt.value("#FFAA00"))#.interactive()
+            st.altair_chart(c, use_container_width=True)        
         with price_col:
             st.line_chart(price_data)
         st.markdown(t.intro3)
