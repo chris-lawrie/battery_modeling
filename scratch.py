@@ -1,3 +1,17 @@
+import pandas as pd
+import plotly.express as px
+import text as t
+from LP import solve_model
+import altair as alt
+import numpy as np
+
+
+df = pd.read_csv("8760_data.csv")
+pv_wind_data = df[["Solar"]].head(100)
+
+print(pv_wind_data.columns)
+
+ 
     # chart.add_rows(df.Solar)  #<TO DO> Figure out how to get this working... :) 
 
 
