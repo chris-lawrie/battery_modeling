@@ -17,8 +17,8 @@ def solve_model(
 
     start = time.time()
 
-    df["Solar"] = df["Solar"] * solar_cap
-    df["Wind"] = df["Wind"] * wind_cap
+    df["Solar"] = df["Solar"]
+    df["Wind"] = df["Wind"]
 
     T = df.shape[0]
     model = p.LpProblem("Model", p.LpMaximize)
