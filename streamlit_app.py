@@ -1,17 +1,19 @@
 # To launch dashboard, in terminal -> streamlit run streamlit_app.py
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import text as t
 from LP import solve_model
-import altair as alt
 import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 def cli():
+    sns.set_theme()
+    sns.set(rc={'figure.font_scale':'4','figure.facecolor':'#353535'})
     st.set_page_config(layout="wide")
 
     # Reading in / manipulating data
-    df = pd.read_csv("8760_data.csv")
+    df = pd.read_csv("24hours.csv")
     header = st.container()
 
     with header:
@@ -20,22 +22,20 @@ def cli():
         st.markdown(t.intro1)
         st.image("stitch.jpg")
         st.markdown(t.intro2)
+        sns.set() 
 
-        sim_length = 24
-        pv_wind_data = df[["Solar"]].head(sim_length)
-        pv_wind_data['Hour']= range(1, len(pv_wind_data) + 1)
-        price_data = df[["Price"]].head(sim_length)
-        price_data['Hour']= range(1, len(price_data) + 1)
+        pv_data = df[["Hour","Solar"]]
+        price_data = df[["Hour", "Price"]]
 
-        st.markdown(f"{pv_wind_data.columns}")
-
-        pv_wind_col, price_col = st.columns(2)
-        with pv_wind_col:
-            # st.line_chart(pv_wind_data, color = "red")
-            c = alt.Chart(pv_wind_data, title = "test_chart").mark_line().encode(x = "Hour", y = "Solar", color=alt.value("#FFAA00"))#.interactive()
-            st.altair_chart(c, use_container_width=True)        
+        pv_col, price_col = st.columns(2)
+        with pv_col:
+            fig = plt.figure(figsize=(12, 7))
+            sns.lineplot(data=pv_data, x="Hour", y="Solar").set(title = "PV Avaliablilty", ylabel = "Generation (MW)", xlabel = "Hour")
+            st.pyplot(fig)
         with price_col:
-            st.line_chart(price_data)
+            fig = plt.figure(figsize=(12, 7))
+            sns.lineplot(data=price_data, x="Hour", y="Price").set(title = "Price", ylabel = "Price ($/MWh)", xlabel = "Hour")
+            st.pyplot(plt.gcf())
         st.markdown(t.intro3)
         st.markdown(t.intro4)
 
