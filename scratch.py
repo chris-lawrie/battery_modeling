@@ -11,6 +11,18 @@ pv_wind_data = df[["Solar"]].head(100)
 
 print(pv_wind_data.columns)
 
+
+
+
+with pv_col:
+    fig = plt.figure(figsize=(12, 7))
+    sns.lineplot(data=pv_data, x="Hour", y="Solar").set(title = "PV Avaliablilty", ylabel = "Generation (MW)", xlabel = "Hour")
+    st.pyplot(fig)
+with price_col:
+    fig = plt.figure(figsize=(12, 7))
+    sns.lineplot(data=price_data, x="Hour", y="Price").set(title = "Price", ylabel = "Price ($/MWh)", xlabel = "Hour")
+    st.pyplot(plt.gcf())
+
  
     # chart.add_rows(df.Solar)  #<TO DO> Figure out how to get this working... :) 
 
