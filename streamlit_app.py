@@ -12,11 +12,9 @@ from plotly.subplots import make_subplots
 import altair as alt
 
 
-
-
 def cli():
     sns.set_theme()
-    sns.set(rc={'figure.facecolor':'#353535'})
+    sns.set(rc={"figure.facecolor": "#353535"})
     st.set_page_config(layout="wide")
 
     # Reading in / manipulating data
@@ -34,15 +32,15 @@ def cli():
         st.plotly_chart(
             px.line(
                 df,
-                x = "Hour",
-                y = ["Solar (MW)", "Price ($/MWh)"],
+                x="Hour",
+                y=["Solar (MW)", "Price ($/MWh)"],
                 line_shape="spline",
                 color_discrete_sequence=["salmon", "skyblue"],
                 width=900,
                 height=500,
                 labels={
-                    "variable":"Legend",
-                    "value":"Value",
+                    "variable": "Legend",
+                    "value": "Value",
                     "Solar": "MW",
                     "Price": "Hour",
                 },
@@ -70,12 +68,12 @@ def cli():
         if st.button("Solve Model"):
             df_ans, tot, solve_time = solve_model(
                 df,
-                solar_cap = 50,
-                wind_cap = 0,
-                battery_cap = 10,
-                energy_cap = 50,
-                grid_cap = 10,
-                start_charge = 0,
+                solar_cap=50,
+                wind_cap=0,
+                battery_cap=10,
+                energy_cap=50,
+                grid_cap=10,
+                start_charge=0,
             )
 
             st.header("The model solved!")
@@ -87,34 +85,31 @@ def cli():
             df_ans["Price ($/MWh)"] = df_ans["Price"]
             df_ans["SOC (MWh)"] = df_ans["SOC"]
             st.plotly_chart(
-            px.line(
-                df_ans,
-                x = "Hour",
-                y = ["Solar (MW)", "Price ($/MWh)", "SOC (MWh)"],
-                line_shape="spline",
-                color_discrete_sequence=["salmon", "skyblue", "green"],
-                width=900,
-                height=500,
-                labels={
-                    "variable":"Legend",
-                    "value":"Value",
-                    "Solar": "MW",
-                    "Price": "Hour",
-                },
+                px.line(
+                    df_ans,
+                    x="Hour",
+                    y=["Solar (MW)", "Price ($/MWh)", "SOC (MWh)"],
+                    line_shape="spline",
+                    color_discrete_sequence=["salmon", "skyblue", "green"],
+                    width=900,
+                    height=500,
+                    labels={
+                        "variable": "Legend",
+                        "value": "Value",
+                        "Solar": "MW",
+                        "Price": "Hour",
+                    },
+                )
+                .update_layout(
+                    {
+                        "title_text": "",
+                        "plot_bgcolor": "#0E1116",
+                        "paper_bgcolor": "#0E1116",
+                    }
+                )
+                .update_xaxes(linecolor="#27292E", gridcolor="#27292E")
+                .update_yaxes(linecolor="#27292E", gridcolor="#27292E")
             )
-            .update_layout(
-                {
-                    "title_text": "",
-                    "plot_bgcolor": "#0E1116",
-                    "paper_bgcolor": "#0E1116",
-                }
-            )
-            .update_xaxes(linecolor="#27292E", gridcolor="#27292E")
-            .update_yaxes(linecolor="#27292E", gridcolor="#27292E")
-        )
-
-
-
 
             # st.line_chart(VRE_data)
             # st.line_chart(price_data)
