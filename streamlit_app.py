@@ -6,6 +6,8 @@ from LP import solve_model
 import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
+import plotly.express as px
+
 
 def cli():
     sns.set_theme()
@@ -24,10 +26,33 @@ def cli():
         st.markdown(t.intro2)
         sns.set() 
 
-        # Total bummer you can't stick in axis labels 😅
         pv_col, price_col = st.columns(2)
         with pv_col:
-            st.line_chart(df["Solar"])
+            st.plotly_chart(
+                px.line(
+                    df,
+                    x = "Hour",
+                    y = "Solar",
+                    line_shape="spline",
+                    color_discrete_sequence=["salmon"],
+                    # width=800,
+                    # height=400,
+                    labels={
+                        "Solar": "MW",
+                        "index": "Hour",
+                    },
+                )
+                .update_layout(
+                    {
+                        "title_text": "Solar Generation Through Time",
+                        "plot_bgcolor": "#0E1116",
+                        "paper_bgcolor": "#0E1116",
+                    }
+                )
+                .update_xaxes(linecolor="#27292E", gridcolor="#27292E")
+                .update_yaxes(linecolor="#27292E", gridcolor="#27292E")
+            )
+            
         with price_col:
             st.line_chart(df["Price"])
         st.markdown(t.intro3)
