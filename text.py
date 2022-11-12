@@ -1,5 +1,5 @@
 intro1 = """For this project, we’re taking on the role of a renewable energy company. Let’s assume we have an x megawatt PV system, and a x MW / xx MWh Li-ion battery system, and that both of these systems use the same inverters and substation. Below is crude circuit diagram for this setup:"""
-intro2 = """The charts below show 24hrs of expected solar generation and hourly electricity prices:"""
+intro2 = """The chart below shows 24hrs of expected solar generation and hourly electricity prices:"""
 intro3 = """ Given these data, our goal is to figure out how we should operate our PV and Battery system to maximise revenue. We need to answer questions like: 
 - When should we charge?
 - When should we discharge?
