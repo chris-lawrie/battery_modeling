@@ -14,50 +14,37 @@ def cli():
     header = st.container()
 
     with header:
-        st.title("Colocated Battery Optimsation")
-        st.header("Project Intro:")
+        st.title("Customise the Model!")
         st.markdown(
-            "Now we're familiar with the basic concepts - we can do some customisation."
+            "Now we're familiar with the basic concepts - we can do some customisation. We'll now have the ability to choose if we want to co-locate with wind or solar, or both, or neither (we're modeling, who cares if its realistic 😄). You also have full control over the length of time for the simulation (up to 1 yr), and can play around with all the assumptions made on the first page. As before, here's a rough circuit diagram of the sysem we're modeling (which now includes the option of wind generation:"
         )
+        
+        st.image("diagram2.jpg")
+        
         st.markdown(
-            "First explore the data below. It shows representative hourly data for avaliable wind and solar power, as a fraction of the installed capacity. We also have hourly electricity prices."
-        )
-        st.markdown(
-            "Before we can model anything, we should decide the time period to run our model across. If this is your first time, we can stick with the default 24 hours. If you'd like something else, check the box and select."
+            "First - select the time period you'd like! For larger time periods the charts get hard to read, so we have some other charts to help parse the data you're selecting."
         )
 
-        custom = st.checkbox("Custom Time Span")
-        if custom:
-            sim_length = st.slider(
-                "Simulation Length",
-                min_value=24,
-                max_value=8760,
-                value=24,
-                label_visibility="visible",
-            )
-        else:
-            sim_length = 24
+        sim_length_days = st.slider(
+            "Simulation Length - Days",
+            min_value=1,
+            max_value=365,
+            value=7,
+            label_visibility="visible",
+        )
+
+        sim_length = sim_length_days*24
 
         pv_wind_data = df[["Wind", "Solar"]].head(sim_length)
         price_data = df[["Price"]].head(sim_length)
-
-        pv_wind_col, price_col = st.columns(2)
-        # st.header("Selected data: hour by hour")
-        with pv_wind_col:
-            st.line_chart(pv_wind_data)
-        with price_col:
-            st.line_chart(price_data)
-
-        st.header("Test graph")
-        # st.header("Selected data: hour by hour") ############################
         st.plotly_chart(
             px.line(
                 pv_wind_data,
-                color_discrete_sequence=["lightblue", "salmon"],
+                color_discrete_sequence=["lightgreen", "salmon"],
                 width=800,
                 height=400,
                 labels={
-                    "value": "Avaliable Power",
+                    "value": "Fraction of Avaliable Power",
                     "index": "Hour",
                     "variable": "VRE Source",
                 },
@@ -72,6 +59,12 @@ def cli():
             .update_xaxes(linecolor="#27292E", gridcolor="#27292E")
             .update_yaxes(linecolor="#27292E", gridcolor="#27292E")
         )
+
+        ### . Draw a plot that overlays each day in the days selected for each DER (or just show avg as single line)
+
+        ### . Draw a plot that sums total hours of sun, wind 
+
+
 
         st.header("Design Your System!")
         st.markdown("Now we need to make some decisions about what to build.")

@@ -87,12 +87,18 @@ def solve_model(
 
     ans_SOC = [None] * T
     ans_OBJ = [None] * T
+    ans_IMP = [None] * T
+    ans_EXP = [None] * T
 
     for t in range(T):
         ans_SOC[t] = p.value(SOC[t])
         ans_OBJ[t] = p.value(OBJ[t])
+        ans_IMP[t] = p.value(GRIDIMPORT[t])
+        ans_EXP[t] = p.value(GRIDEXPORT[t])
 
     df["SOC"] = ans_SOC
+    df["IMP"] = ans_IMP
+    df["EXP"] = ans_EXP
 
     end = time.time()
     solve_time = end - start
