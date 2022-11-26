@@ -59,31 +59,35 @@ def cli():
 
     about_the_model = st.container()
     with about_the_model:
-        st.subheader("Let's build the model:")
-        st.markdown("We won't dive deeply into the weeds of linear programming - but we should still make clear how the model actually works.")
-        st.markdown("To build any linear program, we need to figure out our Objective Function. That is, the thing we want to maximise or minimise. In this case, we want to maximise the revneue earned by our battery and PV system. We lose money when we buy electricity, and we earn money when we sell electricity. Quite simply, then, our objective function is:")
-        st.latex(
-            r"""
-        \begin{aligned}
-        \max \sum_{t \in T} (GridExport_t - GridImport_t) \times Price_t \quad \\[6pt] 
-        \end{aligned} """
-        )
-        st.markdown("Where $GridExport_t$ and $GridImport_t$ represent the electricity we have bought/sold at some time $t$.")
-        st.markdown("Now - we need to account for the constraints of our system. For instance, our PV system cannot generate more than the given profile allows for any time $t$. Other notable constraints include ensuring energy balance at all times between what is being imported/exported/generated/charged/discharge (no free energy!), accounting for power ratings in connection equipment (e.g. 10 MW lines can only transfer so much energy in an hour), and making sure we constrain our variables to be positive. Some example constrains for our $Solar_t$ variable are:")
-        st.latex(
-            r"""Solar_t  ≤ time\_series.Solar_t  \quad \forall t \in T  \quad \\[6pt]"""
-        )
-        st.latex(
-            r"""Solar_t  ≥ 0  \quad \forall t \in T  \quad \\[6pt]"""
-        )
+        st.subheader("Solving the problem:")
+        st.markdown("Before getting into the optimal solution - let's get a sense of how much revenue we can generate without using the battery.")
+        st.info("If we just sold as much solar power as we could when we generate it, we would make $1374. We will call this the **base scenario**.")
+        # st.subheader("Let's build the model:")
+        # st.markdown("We won't dive deeply into the weeds of linear programming - but we should still make clear how the model actually works.")
+        # st.markdown("To build any linear program, we need to figure out our Objective Function. That is, the thing we want to maximise or minimise. In this case, we want to maximise the revneue earned by our battery and PV system. We lose money when we buy electricity, and we earn money when we sell electricity. Quite simply, then, our objective function is:")
+        # st.latex(
+        #     r"""
+        # \begin{aligned}
+        # \max \sum_{t \in T} (GridExport_t - GridImport_t) \times Price_t \quad \\[6pt] 
+        # \end{aligned} """
+        # )
+        # st.markdown("Where $GridExport_t$ and $GridImport_t$ represent the electricity we have bought/sold at some time $t$.")
+        # st.markdown("Now - we need to account for the constraints of our system. For instance, our PV system cannot generate more than the given profile allows for any time $t$. Other notable constraints include ensuring energy balance at all times between what is being imported/exported/generated/charged/discharge (no free energy!), accounting for power ratings in connection equipment (e.g. 10 MW lines can only transfer so much energy in an hour), and making sure we constrain our variables to be positive. Some example constrains for our $Solar_t$ variable are:")
+        # st.latex(
+        #     r"""Solar_t  ≤ time\_series.Solar_t  \quad \forall t \in T  \quad \\[6pt]"""
+        # )
+        # st.latex(
+        #     r"""Solar_t  ≥ 0  \quad \forall t \in T  \quad \\[6pt]"""
+        # )
         
-        st.markdown("To see the full set of constraints and moddel code, please see the _'How The Model Works'_ page. Choosing the correct constraints is one of the trickiest, and most artful, parts of building optimisation models.")
-        st.markdown("With all aspects accounted for - let's solve the model!")
+        # st.markdown("To see the full set of constraints and model code, please see the _'How The Model Works'_ page. Choosing the correct constraints is one of the trickiest, and most artful, parts of building optimisation models.")
+        # st.markdown("With all aspects accounted for - let's solve the model!")
 
 
     results = st.container()
     with results:
         if st.button("Solve Model"):
+            df["Solar"] = df["Solar"]
             df_ans, tot, solve_time = solve_model(
                 df,
                 solar_cap=50,
@@ -97,10 +101,10 @@ def cli():
 
             col1, col2 = st.columns(2)
             with col1:
-                st.metric(label = 'Solve Time:', value = f'{round(solve_time,2)} s')
+                st.metric(label = 'Solve Time:', value = f'{round(solve_time, 2)} s')
 
             with col2:
-                st.metric(label = "Total Revenue", value = f'${round(tot,2)}')
+                st.metric(label = "Total Revenue", value = f'${round(tot)}', delta = f"{round(100*((tot/ 1374) - 1))}% compared to base scenario")
 
             df_ans["Solar (MW)"] = df_ans["Solar"]
             df_ans["Price ($/MWh)"] = df_ans["Price"]

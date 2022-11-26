@@ -5,6 +5,33 @@ import plotly.express as px
 import text as t
 from LP import solve_model
 
+def make_line_chart(df_arg, x_arg, y_arg, cols, title = ""):
+    st.plotly_chart(
+    px.line(
+        df_arg,
+        x=x_arg,
+        y=y_arg,
+        color_discrete_sequence=cols,
+        width=900,
+        height=350,
+        labels={
+            "variable": "Legend",
+            "value": "MW",
+            "Solar": "MW",
+            "Price": "Hour",
+        },
+    )
+    .update_layout(
+        {
+            "title_text": title,
+            "plot_bgcolor": "#0E1116",
+            "paper_bgcolor": "#0E1116",
+        }
+    )
+    .update_xaxes(linecolor="#27292E", gridcolor="#27292E")
+    .update_yaxes(linecolor="#27292E", gridcolor="#27292E"))
+
+
 
 def cli():
     st.set_page_config(layout="wide")
@@ -25,83 +52,31 @@ def cli():
 
         st.header("Design Your System!")
         st.markdown("Now we need to make some decisions about what to build, and how long we should run the simulation.")
+        st.info("Setting PV and/or Wind size = 0 removes them from the model! ☀️")
 
         col1, col2 = st.columns(2)
-        with col1: 
-            include_PV = st.checkbox("Build a PV system")
-            include_wind = st.checkbox("Build a wind farm")
 
-        with col2: 
+        with col1: 
+            solar_cap = 0
+            wind_cap = 0
+
+            solar_cap = st.number_input(
+                "PV system ☀️ (MW)", 0, 100, value=30, step=10
+            )
+
+            wind_cap = st.number_input(
+                "Wind System 💨 (MW)", 0, 200, value=10, step=10
+            )
+
             sim_length_days = st.slider(
             "Simulation Length - Days",
             min_value=1,
             max_value=365,
             value=7,
             label_visibility="visible")
+            sim_length = sim_length_days*24
 
-            
-
-        sim_length = sim_length_days*24
-
-        pv_wind_data = df[["Wind", "Solar"]].head(sim_length)
-        price_data = df[["Price"]].head(sim_length)
-        st.plotly_chart(
-            px.line(
-                pv_wind_data,
-                color_discrete_sequence=["lightgreen", "salmon"],
-                width=800,
-                height=400,
-                labels={
-                    "value": "Fraction of Avaliable Power",
-                    "index": "Hour",
-                    "variable": "VRE Source",
-                },
-            )
-            .update_layout(
-                {
-                    "title_text": "Plot to show VRE avaliability through time",
-                    "plot_bgcolor": "#0E1116",
-                    "paper_bgcolor": "#0E1116",
-                }
-            )
-            .update_xaxes(linecolor="#27292E", gridcolor="#27292E")
-            .update_yaxes(linecolor="#27292E", gridcolor="#27292E")
-        )
-
-        ### . Draw a plot that overlays each day in the days selected for each DER (or just show avg as single line)
-
-        ### . Draw a plot that sums total hours of sun, wind 
-
-
-
-        if include_PV and not include_wind:
-            st.markdown("Building a battery co-located with a PV system.")
-        elif not include_PV and include_wind:
-            st.markdown("Building a battery co-located with a wind farm.")
-        elif include_PV and include_wind:
-            st.markdown(
-                "Building a battery co-located with wind & solar! I don't think this has ever happened in the real world, but hey thats what modeling is for, right? :)"
-            )
-        else:
-            st.markdown(
-                "Building a battery which charges/discharges from the grid (no VRE co-location)."
-            )
-
-        col1, col2 = st.columns(2)
-        with col1:
-            solar_cap = 0
-            wind_cap = 0
-
-            if include_PV:
-                solar_cap = st.number_input(
-                    "PV system ☀️ (MW)", 10, 100, value=50, step=10
-                )
-
-            if include_wind:
-                wind_cap = st.number_input(
-                    "Wind System 💨 (MW)", 50, 200, value=80, step=10
-                )
-
+        with col2: 
             energy_cap = st.number_input(
                 "Battery Size 🔋(MWh)", 10, 100, value=40, step=10
             )
@@ -119,21 +94,20 @@ def cli():
             )  # DC-AC inverter and grid connection capacity (rated in AC MW)
             start_charge = 0.5 * energy_cap
 
-        with col2:
-            st.markdown(
-                "Here's the cost breakdown for the system you're proposing:"
-            )
-            st.markdown(
-                "<TO DO> - stick in correct prices (just shows sized right now, incorrectly labeles )"
-            )
-            bar_chart_data = pd.DataFrame(
-                [solar_cap, wind_cap, energy_cap],
-                ["PV", "Wind", "Battery"],
-                columns=["Cost"],
-            )
-            st.bar_chart(bar_chart_data)
-        st.subheader("<TO DO> stick in rough circuit diagram...")
+            
 
+        price_data = df[["Price"]].head(sim_length)
+        df["Wind"] = df["Wind"]*wind_cap
+        df["Solar"] = df["Solar"]*solar_cap
+
+        make_line_chart(df.head(sim_length), "T", ["Wind", "Solar"], ["lightgreen", "salmon"], "Avaliable VRE Power through time:")
+
+
+        ### . Draw a plot that overlays each day in the days selected for each DER (or just show avg as single line)
+
+        ### . Draw a plot that sums total hours of sun, wind 
+
+ 
     results = st.container()
     with results:
         if st.button("Solve Model"):
@@ -148,17 +122,26 @@ def cli():
             )
 
             st.header("The model solved!")
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             with col1:
                 st.metric(label = 'Solve Time:', value = f'{round(solve_time,2)} s')
 
             with col2:
                 st.metric(label = "Total Revenue", value = f'${round(tot,2)}')
-            VRE_data = df_ans[["SOC", "Solar", "Wind"]]
-            price_data = df_ans["Price"]
-            st.line_chart(VRE_data)
-            st.line_chart(price_data)
 
+            with col3: 
+                st.metric(label = "Avg Daily Revenue", value = f'${round(tot/sim_length_days ,2)}')
+
+
+            df_ans["Solar (MW)"] = df_ans["Solar"]
+            df_ans["Price ($/MWh)"] = df_ans["Price"]
+            df_ans["SOC (MWh)"] = df_ans["SOC"]
+            df_ans["Import (MW)"] = df_ans["IMP"]
+            df_ans["Export (MW)"] = df_ans["EXP"]
+
+            make_line_chart(df_ans, "T", ["Solar (MW)", "Price ($/MWh)", "SOC (MWh)"], ["salmon", "skyblue", "green"])
+            make_line_chart(df_ans, "T", ["Import (MW)", "Export (MW)"], ["red", "blue"])
+            st.plotly_chart(px.line_polar(df_ans, r="Solar (MW)", theta="T", line_close=True).update_layout({"title_text": "Beans",}).update_xaxes(linecolor="#27292E", gridcolor="#27292E"))
 
 if __name__ == "__main__":
     cli()
