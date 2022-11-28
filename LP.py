@@ -25,81 +25,81 @@ def solve_model(
     print("model created!")
 
     # Initialise arrays to hold variables for each time step
-    SOLAR = [None] * T
-    WIND = [None] * T
-    CHARGE = [None] * T
-    DISCHARGE = [None] * T
-    GRIDEXPORT = [None] * T
-    GRIDIMPORT = [None] * T
-    SOC = [None] * T
-    OBJ = [None] * T
+    solar = [None] * T
+    wind = [None] * T
+    charge = [None] * T
+    discharge = [None] * T
+    grid_export = [None] * T
+    grid_import = [None] * T
+    soc = [None] * T
+    objective = [None] * T
 
     # Create varliables ∀ t in T
     for t in range(T):
-        SOLAR[t] = p.LpVariable(f"SOLAR_{t}", lowBound=0, upBound=solar_cap)
-        WIND[t] = p.LpVariable(f"WIND_{t}", lowBound=0, upBound=wind_cap)
+        solar[t] = p.LpVariable(f"solar_{t}", lowBound=0, upBound=solar_cap)
+        wind[t] = p.LpVariable(f"wind_{t}", lowBound=0, upBound=wind_cap)
 
-        CHARGE[t] = p.LpVariable(
-            f"CHARGE_{t}", lowBound=0, upBound=battery_cap
+        charge[t] = p.LpVariable(
+            f"charge_{t}", lowBound=0, upBound=battery_cap
         )
-        DISCHARGE[t] = p.LpVariable(
-            f"DISCHARGE_{t}", lowBound=0, upBound=battery_cap
+        discharge[t] = p.LpVariable(
+            f"discharge_{t}", lowBound=0, upBound=battery_cap
         )
-        GRIDEXPORT[t] = p.LpVariable(
-            f"GRIDEXPORT_{t}", lowBound=0, upBound=grid_cap
+        grid_export[t] = p.LpVariable(
+            f"grid_export_{t}", lowBound=0, upBound=grid_cap
         )
-        GRIDIMPORT[t] = p.LpVariable(
-            f"GRIDIMPORT_{t}", lowBound=0, upBound=grid_cap
+        grid_import[t] = p.LpVariable(
+            f"grid_import_{t}", lowBound=0, upBound=grid_cap
         )
-        SOC[t] = p.LpVariable(f"SOC_{t}", lowBound=0, upBound=energy_cap)
+        soc[t] = p.LpVariable(f"soc_{t}", lowBound=0, upBound=energy_cap)
 
     # Create Objective function and constraints ∀ t in T
     for t in range(T):
-        OBJ[t] = (GRIDEXPORT[t] - GRIDIMPORT[t]) * df.Price[t]
-        model += (SOLAR[t] + WIND[t] + DISCHARGE[t] - CHARGE[t]) == (
-            GRIDEXPORT[t] * (1 / c.inverter_eff)
-            - GRIDIMPORT[t] * c.inverter_eff
+        objective[t] = (grid_export[t] - grid_import[t]) * df.Price[t]
+        model += (solar[t] + wind[t] + discharge[t] - charge[t]) == (
+            grid_export[t] * (1 / c.INVERTER_EFF)
+            - grid_import[t] * c.INVERTER_EFF
         )
-        model += SOLAR[t] <= df.Solar[t]
-        model += WIND[t] <= df.Wind[t]
+        model += solar[t] <= df.Solar[t]
+        model += wind[t] <= df.Wind[t]
         if t == 0:
-            model += SOC[t] == (
+            model += soc[t] == (
                 start_charge
                 + (
-                    CHARGE[t] * c.battery_eff
-                    - DISCHARGE[t] * (1 / c.battery_eff)
+                    charge[t] * c.BATTERY_EFF
+                    - discharge[t] * (1 / c.BATTERY_EFF)
                 )
             )
         else:
-            model += SOC[t] == (
-                SOC[t - 1]
+            model += soc[t] == (
+                soc[t - 1]
                 + (
-                    CHARGE[t] * c.battery_eff
-                    - DISCHARGE[t] * (1 / c.battery_eff)
+                    charge[t] * c.BATTERY_EFF
+                    - discharge[t] * (1 / c.BATTERY_EFF)
                 )
             )
 
-    model += sum(OBJ)
+    model += sum(objective)
 
     print("LP Solving:")
     status = model.solve()
     print(f"LP Status = {status}")
 
-    ans_SOC = [None] * T
-    ans_OBJ = [None] * T
+    ans_soc = [None] * T
+    ans_objective = [None] * T
     ans_IMP = [None] * T
     ans_EXP = [None] * T
 
     for t in range(T):
-        ans_SOC[t] = p.value(SOC[t])
-        ans_OBJ[t] = p.value(OBJ[t])
-        ans_IMP[t] = p.value(GRIDIMPORT[t])
-        ans_EXP[t] = p.value(GRIDEXPORT[t])
+        ans_soc[t] = p.value(soc[t])
+        ans_objective[t] = p.value(objective[t])
+        ans_IMP[t] = p.value(grid_import[t])
+        ans_EXP[t] = p.value(grid_export[t])
 
-    df["SOC"] = ans_SOC
+    df["SOC"] = ans_soc
     df["IMP"] = ans_IMP
     df["EXP"] = ans_EXP
 
     end = time.time()
     solve_time = end - start
-    return (df, sum(ans_OBJ), solve_time)
+    return (df, sum(ans_objective), solve_time)
