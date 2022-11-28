@@ -33,6 +33,33 @@ def make_line_chart(df_arg, x_arg, y_arg, cols, title = ""):
 
 
 
+def make_avg_chart(df_arg, x_arg, y_arg, color, title = ""):
+    st.plotly_chart(
+    px.line(
+        df_arg,
+        x=x_arg,
+        y=y_arg,
+        width=550,
+        height=300,
+        color_discrete_sequence = [color],
+        labels={
+            "variable": "Legend",
+            "value": "MW",
+            "Solar": "MW",
+            "Price": "Hour",
+        },
+    )
+    .update_layout(
+        {
+            "title_text": f"Average Day - {title}",
+            "plot_bgcolor": "#0E1116",
+            "paper_bgcolor": "#0E1116",
+        }
+    )
+    .update_xaxes(linecolor="#27292E", gridcolor="#27292E")
+    .update_yaxes(linecolor="#27292E", gridcolor="#27292E")
+    .update(layout_showlegend=False))
+
 def cli():
     st.set_page_config(layout="wide")
 
@@ -99,13 +126,29 @@ def cli():
         price_data = df[["Price"]].head(sim_length)
         df["Wind"] = df["Wind"]*wind_cap
         df["Solar"] = df["Solar"]*solar_cap
+        
+        avgs = []
+        Hours = df.Hour.unique()
+        df_avg = df.head(sim_length)
+
+        for hour in Hours: 
+            avgs.append({
+                "Hour": hour,
+                "Avg. Solar": df_avg.loc[df_avg['Hour'] == hour, 'Solar'].mean(),
+                "Avg. Wind": df_avg.loc[df_avg['Hour'] == hour, 'Wind'].mean()})
+
+        avgs = pd.DataFrame(avgs)
+
+
+        col1, col2 = st.columns(2)
+        with col1:
+            # (df_arg, x_arg, y_arg, title = "")
+            make_avg_chart(avgs, "Hour", ["Avg. Solar"], "salmon","Solar")
+
+        with col2:
+            make_avg_chart(avgs, "Hour", ["Avg. Wind"], "lightgreen","Wind")
 
         make_line_chart(df.head(sim_length), "T", ["Wind", "Solar"], ["lightgreen", "salmon"], "Avaliable VRE Power through time:")
-
-
-        ### . Draw a plot that overlays each day in the days selected for each DER (or just show avg as single line)
-
-        ### . Draw a plot that sums total hours of sun, wind 
 
  
     results = st.container()
@@ -127,10 +170,10 @@ def cli():
                 st.metric(label = 'Solve Time:', value = f'{round(solve_time,2)} s')
 
             with col2:
-                st.metric(label = "Total Revenue", value = f'${round(tot,2)}')
+                st.metric(label = "Total Revenue", value = f'${round(tot)}')
 
             with col3: 
-                st.metric(label = "Avg Daily Revenue", value = f'${round(tot/sim_length_days ,2)}')
+                st.metric(label = "Avg Daily Revenue", value = f'${round(tot/sim_length_days)}')
 
 
             df_ans["Solar (MW)"] = df_ans["Solar"]
