@@ -5,8 +5,10 @@ with header:
     st.header("Notes on the model")
     st.warning("Scroll down to see the code", icon="⬇")
     st.markdown(
-        "At its core, this model is just a linear program. The objective function maximises the total revenue over the given time period, and is defined as:"
-    )
+        "At its core, this model is just a [linear program](https://en.wikipedia.org/wiki/Linear_programming). At every timestep, we want our model to tell us how much power we should import/export from the grid, how we should operate our battery, and how we should direct (or curtail) our solar/wind power. For each timestep we will need decision variables to keep track each one of these things. These variables are shown in the diagram below:"
+        )
+    st.image("diagram3.jpg")
+    st.markdown("The objective function maximises revenue, and at any given time only needs to consider electricity price and grid import/export. It is simply defined as:")
     st.latex(
         r"""
     \begin{aligned}
@@ -14,24 +16,67 @@ with header:
     \end{aligned} """
     )
 
-    st.markdown("Subject to the following constraints:")
+    st.markdown("As in any optimisation problem, we need to constrain this objective function in a way that reflects what we are trying to model. First we can constrain the PV/Wind production so we don't exceed the user-specified production limit, nor allow them to be negative (they're not allowed to _use_ energy).")
+    st.latex(
+        r"""
+    \begin{aligned}
+    Solar_t  \leq time\_series.Solar_t  \quad \forall t \in T  \quad \\[6pt]
+    Wind_t  \leq time\_series.Wind_t  \quad \forall t \in T  \quad \\[6pt]
+    Solar_t, \; Wind_t \geq 0  \quad \forall t \in T  \quad \\[6pt]
+    \end{aligned} """
+    )
+    
+    st.markdown("Likewise, we need to constrain the energy flowing in/out of the battery to be within the specified energy capacity. We should also keep track of the state of charge (SOC) of the battery, so we don't exceed the specified energy capicity. This is where we can account for the battery charge/discharging efficiency.")
+    st.latex(
+        r"""
+    \begin{aligned}
+    Charge_t     \leq battery\_cap      \quad \forall t \in T  \quad \\[6pt]
+    Discharge_t    \leq battery\_cap    \quad \forall t \in T  \quad \\[6pt]
+    \end{aligned} """
+    )
+
+    st.latex(
+        r"""
+    \begin{aligned}
+    SOC_{0} = start\_charge + \big(Charge_0 * battery\_eff - \frac{Discharge_0}{battery\_eff}\big) \quad \\[6pt]
+    SOC_t = SOC_{t-1} + \big(Charge_t * battery\_eff - \frac{Discharge_t}{battery\_eff}\big) \quad \forall t \in T > 0 \quad \\[6pt]
+    \end{aligned} """
+    )
+
+
+    st.latex(
+        r"""
+    \begin{aligned}
+    SOC_t    \leq energy\_cap  \quad \forall t \in T  \quad \\[6pt]
+    Charge_t, \; Discharge_t, \; SOC_t \geq 0 \quad \forall t \in T  \quad \\[6pt]
+    \end{aligned} """
+    )
+   
+   
+    st.markdown("We also need to constrain the energy flowing in/out of the whole system into/out of the grid, to be within the specified grid capacity.")
+    st.latex(
+        r"""
+    \begin{aligned}
+    GridExport_t    \leq grid\_cap      \quad \forall t \in T  \quad \\[6pt]
+    GridImport_t    \leq grid\_cap      \quad \forall t \in T  \quad \\[6pt]
+    GridExport_t, \; GridImport_t \geq 0  \quad \forall t \in T  \quad \\[6pt]
+    \end{aligned} """
+    )
+
+
+
+    st.markdown("Finally we need to ensure energy ballance at all times. The sum of energy produced from our VRE and battery (net solar + wind + storage) should equal the energy we are exporting to the grid (net export) at all times, so there is no free energy. Note that the net export can be negative (i.e importing energy), and the net solar + wind + storage export can also be negative (i.e. charging the battery). This stage is where we account for inverter losses:")
     st.latex(
         r"""
     \begin{aligned}
     NetSolarWindStorage_t = Solar_t + Wind_t + Discharge_t - Charge_t \quad \forall t \in T \quad\\[6pt]
     NetExport_t = \frac{GridExport_t}{inverter\_eff} - GridImport_t \times inverter\_eff \quad \forall t \in T \quad \\[6pt]
     NetSolarStorage_t = eNetExport_t \quad \forall t \in T \quad \\[6pt]
-    SOC_{0} = start\_charge + \big(Charge_0 * battery\_eff - \frac{Discharge_0}{battery\_eff}\big) \quad \\[6pt]
-    SOC_t = SOC_{t-1} + \big(Charge_t * battery\_eff - \frac{Discharge_t}{battery\_eff}\big) \quad \forall t \in T > 0 \quad \\[6pt]
-    Solar_t  \leq time\_series.Solar_t  \quad \forall t \in T  \quad \\[6pt]
-    Wind_t  \leq time\_series.Wind_t  \quad \forall t \in T  \quad \\[6pt]
-    Charge_t     \leq battery\_cap      \quad \forall t \in T  \quad \\[6pt]
-    Discharge_t    \leq battery\_cap    \quad \forall t \in T  \quad \\[6pt]
-    SOC_t    \leq energy\_cap           \quad \forall t \in T  \quad \\[6pt]
-    GridExport_t    \leq grid\_cap      \quad \forall t \in T  \quad \\[6pt]
-    GridImport_t    \leq grid\_cap      \quad \forall t \in T  \quad \\[6pt]
     \end{aligned} """
     )
+
+    st.markdown("With everything defined, all that remains is to code the problem into your language of choice, and run it! Below is the code for this project in python.")
+    
 
 code = st.container()
 with code:
@@ -42,7 +87,6 @@ with code:
 import pandas as pd
 import pulp as p
 import time
-
 import constants as c
 
 
