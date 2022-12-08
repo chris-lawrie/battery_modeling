@@ -71,6 +71,12 @@ with header:
     \begin{aligned}
     NetSolarWindStorage_t = Solar_t + Wind_t + Discharge_t - Charge_t \quad \forall t \in T \quad\\[6pt]
     NetExport_t = \frac{GridExport_t}{inverter\_eff} - GridImport_t \times inverter\_eff \quad \forall t \in T \quad \\[6pt]
+    \end{aligned} """
+    )
+
+    st.latex(
+        r"""
+    \begin{aligned}
     NetSolarStorage_t = eNetExport_t \quad \forall t \in T \quad \\[6pt]
     \end{aligned} """
     )
